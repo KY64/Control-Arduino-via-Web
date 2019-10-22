@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      body {
+        background: #f0f0f0;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+      #device-1,
+      #device-2 {
+        display: block;
+        height: 55px;
+        width: 120px;
+        border: none;
+        outline: none;
+        border-radius: 50px;
+        background: blue;
+        transition: 0.9s;
+      }
+      #device-1.toggle,
+      #device-2.toggle {
+        background: #a0a0a0;
+      }
+      #layout {
+        margin: 0 auto;
+        display: grid;
+        justify-content: center;
+        text-align: center;
+      }
+
+      #device-1::before,
+      #device-2::before {
+        box-shadow: 0 0 7px rgba(0, 0, 0, 0.4);
+        display: inline-block;
+        border-radius: 100%;
+        background: white;
+        margin-left: 65px;
+        padding: 26px;
+        content: "";
+        transition: 0.6s;
+      }
+      #device-1.toggle::before,
+      #device-2.toggle::before {
+        box-shadow: 0 0 7px rgba(0, 0, 0, 0.4);
+        display: inline-block;
+        border-radius: 100%;
+        background: white;
+        margin-left: -70px;
+        padding: 26px;
+        content: "";
+      }
+    </style>
+  </head>
+  <body>
+    <div id="layout">
+      <label for="device-1" style="margin-top:100px;">KIPAS-1</label>
+      <br />
+      <button id="device-1" class="toggle" onclick="btnState1()"></button>
+      <label for="device-1" style="margin-top:60px;">KIPAS-2</label>
+      <br />
+      <button id="device-2" class="toggle" onclick="btnState2()"></button>
+    </div>
+    <script>
+      function btnState1() {
+        let device = document.getElementById("device-1");
+        device.classList.toggle("toggle");
+        fetch("http://localhost:3000/test")
+          .then(res => console.log(res.status))
+      }
+
+      function btnState2() {
+        let device = document.getElementById("device-2");
+        device.classList.toggle("toggle");
+      }
+    </script>
+  </body>
+</html>
