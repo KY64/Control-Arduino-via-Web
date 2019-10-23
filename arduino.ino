@@ -1,77 +1,91 @@
-#include <Arduino.h>
 #include <ESP8266WiFi.h>
-#include <ESP8266WiFiMulti.h>
+#include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
 #include <ESP8266HTTPClient.h>
 
+#ifndef STASSID
+#define STASSID "KY"
+#define STAPSK  ""
+#endif
 
-ESP8266WiFiMulti WiFiMulti;
-
-char fan[] = "OFF";
-char data[100];
+const char* ssid = STASSID;
+const char* password = STAPSK;
+char fan[5];
+char ON[] = "ON";
+char OFF[] = "OFF";
+char data[30];
 int temp = 0;
 
-void setup() {
+ESP8266WebServer server(80);
 
-  Serial.begin(115200);
-  // Serial.setDebugOutput(true);
-
-  Serial.println();
-  Serial.println();
-  Serial.println();
-
-  for (uint8_t t = 4; t > 0; t--) {
-    Serial.printf("[SETUP] WAIT %d...\n", t);
-    Serial.flush();
-    delay(1000);
-  }
-
-  WiFi.mode(WIFI_STA);
-  WiFiMulti.addAP("KY", "");
-
-}
-
-void loop() {
-  // wait for WiFi connection
-  if ((WiFiMulti.run() == WL_CONNECTED)) {
-
-    WiFiClient client;
-
-    HTTPClient http;
-
-    Serial.print("[HTTP] begin...\n");
-    if (http.begin(client, "http://192.168.43.173:3000/data")) {  // HTTP
-
-
-      Serial.print("[HTTP] GET...\n");
-      // start coxnnection and send HTTP header
-      http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-
-      //String data = "fan=" + fan + "&temp=";
-      sprintf(data, "fan=%s&temp=%d",fan,temp);
+void handleRoot() {
+  for (uint8_t i = 0; i < server.args(); i++) {
+    if(server.argName(i) == "fan") {
+      memset(fan, NULL, sizeof(fan));
       
-      int httpCode = http.POST(data);
-
-      // httpCode will be negative on error
-      if (httpCode > 0) {
-        // HTTP header has been send and Server response header has been handled
-        Serial.printf("[HTTP] GET... code: %d\n", httpCode);
-
-        // file found at server
-        if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
-          String payload = http.getString();
-          Serial.println(payload);
-        }
-      } else {
-        Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+      if(server.arg(i) == "ON"){
+        digitalWrite(LED_BUILTIN, LOW);
+        sprintf(fan, ON);
       }
-
-//      http.end();
-    } else {
-      Serial.printf("[HTTP} Unable to connect\n");
+      else if(server.arg(i) == "OFF"){
+        digitalWrite(LED_BUILTIN, HIGH);
+        sprintf(fan, OFF);
+      }
     }
   }
+  
+  server.send(200, "text/plain", "hello from esp8266!");
+}
+
+void setup(void) {
+  pinMode(LED_BUILTIN, OUTPUT);
+  Serial.begin(115200);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  Serial.println("");
+
+  // Wait for connection
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.print("Connected to ");
+  Serial.println(ssid);
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  if (MDNS.begin("esp8266")) {
+    Serial.println("MDNS responder started");
+  }
+
+  server.on("/", handleRoot);
+
+  server.begin();
+  Serial.println("HTTP server started");
+}
+
+void loop(void) {
+  server.handleClient();
+  MDNS.update();
+
+  HTTPClient http;
+  if (http.begin("http://192.168.43.173:3000/data")){
+      http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+      sprintf(data, "fan=%s&temp=%d",fan,temp);
+      int httpCode = http.POST(data);  
+      Serial.printf("[HTTP] code: %d\n", httpCode);
+      
+      if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
+          String payload = http.getString();
+          Serial.println(payload);
+      }
+      else
+        Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+      
+  } else
+      Serial.printf("[HTTP} Unable to connect\n");
   temp += 2;
   delay(2000);
 }
