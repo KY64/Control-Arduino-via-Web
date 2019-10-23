@@ -19,28 +19,37 @@
         border-radius: 50px;
         background: blue;
         transition: 0.9s;
+        cursor: pointer;
       }
       #device-1.toggle,
       #device-2.toggle {
         background: #a0a0a0;
+        cursor: pointer;
       }
       #layout {
         margin: 0 auto;
+        margin-top: 160px;
         display: grid;
         justify-content: center;
-        text-align: center;
+        grid-template-columns: 200px 200px;
       }
-
+      #grid-left,
+      #grid-right {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
       #device-1::before,
       #device-2::before {
         box-shadow: 0 0 7px rgba(0, 0, 0, 0.4);
         display: inline-block;
         border-radius: 100%;
         background: white;
-        margin-left: 65px;
+        margin-left: 60px;
         padding: 26px;
         content: "";
         transition: 0.6s;
+        transform: scale(0.9);
       }
       #device-1.toggle::before,
       #device-2.toggle::before {
@@ -48,33 +57,67 @@
         display: inline-block;
         border-radius: 100%;
         background: white;
-        margin-left: -70px;
+        margin-left: -65px;
         padding: 26px;
         content: "";
+      }
+      #fan1,
+      #fan2 {
+        justify-self: center;
+      }
+      #fan1,
+      #fan2,
+      #temp1,
+      #temp2 {
+        align-self: center;
+      }
+      #temp1,
+      #temp2 {
+        font-size: 40pt;
       }
     </style>
   </head>
   <body>
     <div id="layout">
-      <label for="device-1" style="margin-top:100px;">KIPAS-1</label>
-      <br />
-      <button id="device-1" class="toggle" onclick="btnState1()"></button>
-      <label for="device-1" style="margin-top:60px;">KIPAS-2</label>
-      <br />
-      <button id="device-2" class="toggle" onclick="btnState2()"></button>
+      <div id="fan1">
+        <label for="device-1">KIPAS-1</label>
+        <button id="device-1" class="toggle" onclick="btnState1()"></button>
+      </div>
+      <p id="temp1"></p>
+      <div id="fan2">
+        <label for="device-1">KIPAS-2</label>
+        <button id="device-2" class="toggle" onclick="btnState2()"></button>
+      </div>
+      <p id="temp2">
+        13<sup>o</sup>C
+      </p>
     </div>
     <script>
+      var fan, temperature;
+
+      function updateData() {
+        fetch("http://localhost:3000/data").then(res =>
+          res.json().then(data => {
+            fan = data.fan;
+            document.getElementById("temp1").innerHTML =
+              data.temp + "<sup>o</sup>C";
+            let device = document.getElementById("device-1");
+            if (fan == "OFF") device.classList.add("toggle");
+            else device.classList.remove("toggle");
+          })
+        );
+      }
       function btnState1() {
-        let device = document.getElementById("device-1");
-        device.classList.toggle("toggle");
-        fetch("http://localhost:3000/test")
-          .then(res => console.log(res.status))
+        if (fan == "ON") fetch("http://192.168.43.93:80/?fan=OFF");
+        else fetch("http://192.168.43.93:80/?fan=ON");
       }
 
       function btnState2() {
         let device = document.getElementById("device-2");
         device.classList.toggle("toggle");
       }
+
+      setInterval("updateData()", 100);
     </script>
   </body>
 </html>
