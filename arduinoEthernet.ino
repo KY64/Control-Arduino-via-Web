@@ -22,6 +22,7 @@ char fan[5];
 String data;
 char OFF[] = "OFF";
 char ON[] = "ON";
+char Mode[] = "manual";
 
 void fanON()
 {
@@ -35,6 +36,18 @@ void fanOFF()
   char OFF[] = "OFF";
   digitalWrite(LED_BUILTIN, HIGH);
   sprintf(fan, OFF);
+}
+
+void modeAuto() {
+  memset(Mode,NULL,sizeof(Mode));
+  char temp[] = "auto";
+  sprintf(Mode,temp);
+}
+
+void modeManual() {
+  memset(Mode,NULL,sizeof(Mode));
+  char temp[] = "manual";
+  sprintf(Mode,temp);
 }
 
 void setup() {
@@ -70,11 +83,11 @@ void loop() {
   if (temp > 500)
     temp = 0;
 
-  if(Auto) {
+  if(strcmp(Mode,"auto")) {
       if (temp > 250) fanON();
       else fanOFF();
   }
-    
+
   if (HTTPclient.connect(server, 3000)) {
     //    Serial.println("Sending to Server: ");
     HTTPclient.println("POST /data HTTP/1.1");
@@ -84,8 +97,8 @@ void loop() {
     HTTPclient.println("Connection: close");
     HTTPclient.println("User-Agent: Arduino/1.0");
     HTTPclient.print("Content-Length: ");
-    
-    data = "fan=" + String(fan) + "&temp=" + String(temp);
+
+    data = "fan=" + String(fan) + "&temp=" + String(temp) + "&mode=" + String(Mode);
     HTTPclient.println(data.length());
     //    Serial.println(data.length());
     HTTPclient.println();
@@ -115,7 +128,7 @@ void loop() {
         char c = client.read();
         if (readString.length() < 50)
           readString += c;
-        
+
         HTTPserver.write(c);
         if (c == '\n' && currentLineIsBlank) {
           // send a standard http response header
@@ -153,7 +166,7 @@ void loop() {
     Serial.println("client disconnected");
 
     if (readString.indexOf("mode=manual") > 0){
-      Auto = false;
+      modeManual();
       if (readString.indexOf("fan=ON") > 0) //checks for on
       {
         fanON();
@@ -163,10 +176,10 @@ void loop() {
       {
         fanOFF();
         Serial.println("Fan is OFF!");
-      } 
+      }
     }
-    else if (readString.indexOf("mode=automatic") > 0)
-      Auto = true;
+    else if (readString.indexOf("mode=auto") > 0)
+      modeAuto();
 
     Serial.println(readString);
     readString = "";

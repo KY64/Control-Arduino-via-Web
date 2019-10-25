@@ -7,10 +7,11 @@
     <style>
       body {
         background: #f0f0f0;
+        text-align: center;
         font-family: Arial, Helvetica, sans-serif;
       }
       #device-1,
-      #device-2 {
+      #mode-1 {
         display: block;
         height: 55px;
         width: 120px;
@@ -22,7 +23,7 @@
         cursor: pointer;
       }
       #device-1.toggle,
-      #device-2.toggle {
+      #mode-1.toggle {
         background: #a0a0a0;
         cursor: pointer;
       }
@@ -40,7 +41,7 @@
         align-items: center;
       }
       #device-1::before,
-      #device-2::before {
+      #mode-1::before {
         box-shadow: 0 0 7px rgba(0, 0, 0, 0.4);
         display: inline-block;
         border-radius: 100%;
@@ -52,7 +53,7 @@
         transform: scale(0.9);
       }
       #device-1.toggle::before,
-      #device-2.toggle::before {
+      #mode-1.toggle::before {
         box-shadow: 0 0 7px rgba(0, 0, 0, 0.4);
         display: inline-block;
         border-radius: 100%;
@@ -85,36 +86,42 @@
       </div>
       <p id="temp1"></p>
       <div id="fan2">
-        <label for="device-1">KIPAS-2</label>
-        <button id="device-2" class="toggle" onclick="btnState2()"></button>
+        <label for="mode-1">Mode</label>
+        <button id="mode-1" class="toggle" onclick="btnMode1()"></button>
       </div>
       <p id="temp2">
         13<sup>o</sup>C
       </p>
     </div>
     <script>
-      var fan, temperature;
+      var fan, temperature, mode;
 
       function updateData() {
         fetch("http://localhost:3000/data").then(res =>
           res.json().then(data => {
             fan = data.fan;
+            mode = data.mode;
             document.getElementById("temp1").innerHTML =
               data.temp + "<sup>o</sup>C";
             let device = document.getElementById("device-1");
+            let btnMode = document.getElementById("mode-1");
+
             if (fan == "OFF") device.classList.add("toggle");
             else device.classList.remove("toggle");
+
+            if (mode == "auto") btnMode.classList.add("toggle");
+            else btnMode.classList.remove("toggle");
           })
         );
       }
       function btnState1() {
-        if (fan == "ON") fetch("http://192.168.1.177/?fan=OFF&mode=manual");
-        else fetch("http://192.168.1.177/?fan=ON&mode=manual");
+        if (fan == "ON") fetch(`http://192.168.1.177/?fan=OFF&mode=manual`);
+        else fetch(`http://192.168.1.177/?fan=ON&mode=manual`);
       }
 
-      function btnState2() {
-        let device = document.getElementById("device-2");
-        device.classList.toggle("toggle");
+      function btnMode1() {
+        if (mode == "manual") fetch(`http://192.168.1.177/?fan=${fan}&mode=auto`);
+        else fetch(`http://192.168.1.177/?fan=${fan}&mode=manual`);
       }
 
       setInterval("updateData()", 100);
