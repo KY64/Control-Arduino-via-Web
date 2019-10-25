@@ -17,7 +17,7 @@ unsigned long byteCount = 0;
 String readString;
 bool Auto = false;
 
-int temp = 0, counter = 0;
+int temp = 0;
 char fan[5];
 String data;
 char OFF[] = "OFF";
@@ -65,7 +65,6 @@ void setup() {
 }
 
 void loop() {
-  counter++;
   temp++;
   temp += 2;
   if (temp > 500)
@@ -76,7 +75,7 @@ void loop() {
       else fanOFF();
   }
     
-  if (HTTPclient.connect(server, 3000) && counter % 100 == 0) {
+  if (HTTPclient.connect(server, 3000)) {
     //    Serial.println("Sending to Server: ");
     HTTPclient.println("POST /data HTTP/1.1");
     Serial.print("POST /data HTTP/1.1");
@@ -93,7 +92,6 @@ void loop() {
     //    Serial.println(data);
     HTTPclient.print(data);
     HTTPclient.println();
-    counter  = 0;
 
   } else {
     //    Serial.println("connection failed");
