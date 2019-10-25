@@ -83,7 +83,7 @@ void loop() {
   if (temp > 500)
     temp = 0;
 
-  if(strcmp(Mode,"auto")) {
+  if(strcmp(Mode,"auto") == 0) {
       if (temp > 250) fanON();
       else fanOFF();
   }
