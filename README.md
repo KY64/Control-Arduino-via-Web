@@ -1,8 +1,9 @@
-#  Control ESP8266 via Web
-I use Wemos D1 to connect a website so I could control the device and read its data from website. I use **ExpressJS** to create the server so you need to install [NPM](https://nodejs.org/en/) first if you want to make it work.
+#  Control Arduino via Web
+I use Wemos D1 to connect a website via WiFi and Ethernet Shield to connect via Ethernet so I could control the device and read its data from website. I use **ExpressJS** to create the server so you need to install [NPM](https://nodejs.org/en/) first if you want to make it work.
 
 ### Requirements
-*	Wemos D1
+*	Wemos D1 (if you want to use Wifi)*
+*   Ethernet Shield (if you want to use ethernet)*
 *	Arduino IDE
 *	[NPM (Node Package Manager)](https://nodejs.org/en/)
 
