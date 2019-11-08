@@ -1,130 +1,147 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=toggleDevice-width, initial-scale=1, shrink-to-fit=no"
+    />
+
     <style>
       body {
         background: #f0f0f0;
         text-align: center;
         font-family: Arial, Helvetica, sans-serif;
       }
-      #device-1,
-      #mode-1 {
-        display: block;
-        height: 55px;
-        width: 120px;
-        border: none;
-        outline: none;
-        border-radius: 50px;
-        background: blue;
-        transition: 0.9s;
-        cursor: pointer;
-      }
-      #device-1.toggle,
-      #mode-1.toggle {
-        background: #a0a0a0;
-        cursor: pointer;
-      }
-      #layout {
-        margin: 0 auto;
-        margin-top: 160px;
-        display: grid;
-        justify-content: center;
-        grid-template-columns: 200px 200px;
-      }
-      #grid-left,
-      #grid-right {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-      #device-1::before,
-      #mode-1::before {
-        box-shadow: 0 0 7px rgba(0, 0, 0, 0.4);
-        display: inline-block;
-        border-radius: 100%;
-        background: white;
-        margin-left: 60px;
-        padding: 26px;
-        content: "";
-        transition: 0.6s;
-        transform: scale(0.9);
-      }
-      #device-1.toggle::before,
-      #mode-1.toggle::before {
-        box-shadow: 0 0 7px rgba(0, 0, 0, 0.4);
-        display: inline-block;
-        border-radius: 100%;
-        background: white;
-        margin-left: -65px;
-        padding: 26px;
-        content: "";
-      }
-      #fan1,
-      #fan2 {
-        justify-self: center;
-      }
-      #fan1,
-      #fan2,
-      #temp1,
-      #temp2 {
-        align-self: center;
-      }
-      #temp1,
-      #temp2 {
-        font-size: 40pt;
-      }
     </style>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="style/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="style/font-awesome/css/all.min.css" />
+
+    <title>Pak Mob Web</title>
   </head>
   <body>
-    <div id="layout">
-      <div id="fan1">
-        <label for="device-1">KIPAS-1</label>
-        <button id="device-1" class="toggle" onclick="btnState1()"></button>
+    <!-- Navbar Content -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+          <a class="nav-item nav-link active" href="#">Home</a>
+          <a class="nav-item nav-link" href="#">Logging</a>
+        </div>
       </div>
-      <p id="temp1"></p>
-      <div id="fan2">
-        <label for="mode-1">Mode</label>
-        <button id="mode-1" class="toggle" onclick="btnMode1()"></button>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNavAltMarkup"
+        aria-controls="navbarNavAltMarkup"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="container" style="margin-top: 5%; text-align: center;">
+      <div class="row">
+        <div class="col" style="border-right: 1px solid #333;">
+          <div
+            id="fan1"
+            style="cursor:pointer;"
+            class="fas fa-fan fa-10x"
+            onclick="fan1State()"
+          ></div>
+          <br />
+          <br />
+          <button
+            id="mode-1"
+            type="button"
+            class="btn btn-success btn-lg"
+            onclick="btnMode1()"
+          >
+            Automatic
+          </button>
+          <br />
+          <br />
+          <h2 id="temp1" style="font-weight: 400;"></h2>
+        </div>
+        <div class="col">
+          <i
+            id="fan2"
+            class="fas fa-fan fa-10x fa-spin"
+            style="cursor:pointer;"
+            onclick="fan2State()"
+          ></i>
+          <br />
+          <br />
+          <button
+            id="mode-2"
+            type="button"
+            class="btn btn-secondary btn-lg"
+            onclick="btnMode2()"
+          >
+            Manual
+          </button>
+          <br />
+          <br />
+          <h2 id="temp2" style="font-weight: 400;">13<sup>o</sup>C</h2>
+        </div>
       </div>
-      <p id="temp2">
-        13<sup>o</sup>C
-      </p>
     </div>
+
     <script>
       var fan, temperature, mode;
+      var i = 0;
 
-      function updateData() {
-        fetch("http://localhost:3000/data").then(res =>
+      function updateData(url, tempVar, fanVar, modeVar) {
+        fetch(url).then(res =>
           res.json().then(data => {
             fan = data.fan;
             mode = data.mode;
-            document.getElementById("temp1").innerHTML =
+            document.getElementById(tempVar).innerHTML =
               data.temp + "<sup>o</sup>C";
-            let device = document.getElementById("device-1");
-            let btnMode = document.getElementById("mode-1");
+            let fanState = document.getElementById(fanVar);
+            let btnMode = document.getElementById(modeVar);
 
-            if (fan == "OFF") device.classList.add("toggle");
-            else device.classList.remove("toggle");
+            if (fan == "ON") fanState.classList.add("fa-spin");
+            else fanState.classList.remove("fa-spin");
 
-            if (mode == "auto") btnMode.classList.add("toggle");
-            else btnMode.classList.remove("toggle");
+            if (mode == "auto") {
+              btnMode.classList.remove("btn-secondary");
+              btnMode.classList.add("btn-success");
+              btnMode.innerHTML = "Automatic";
+            } else {
+              btnMode.classList.remove("btn-success");
+              btnMode.classList.add("btn-secondary");
+              btnMode.innerHTML = "Manual";
+            }
+          console.log(fan)
           })
         );
+        i++;
       }
-      function btnState1() {
-        if (fan == "ON") fetch(`http://192.168.1.177/?fan=OFF&mode=manual`);
-        else fetch(`http://192.168.1.177/?fan=ON&mode=manual`);
+      function fan1State() {
+        if (fan == "OFF") fetch(`http://192.168.1.177/?fan=ON&mode=manual`);
+        else fetch(`http://192.168.1.177/?fan=OFF&mode=manual`);
       }
 
       function btnMode1() {
-        if (mode == "manual") fetch(`http://192.168.1.177/?fan=${fan}&mode=auto`);
-        else fetch(`http://192.168.1.177/?fan=${fan}&mode=manual`);
+        if (mode == "manual") {
+          fetch(`http://192.168.1.177/?fan=${fan}&mode=auto`);
+        } else fetch(`http://192.168.1.177/?fan=${fan}&mode=manual`);
       }
 
-      setInterval("updateData()", 100);
+      setInterval(
+        "updateData('http://localhost:3000/data/1','temp1','fan1','mode-1')",
+        100
+      );
+      setInterval(
+        "updateData('http://localhost:3000/data/2','temp2','fan2','mode-2')",
+        100
+      );
     </script>
   </body>
 </html>
